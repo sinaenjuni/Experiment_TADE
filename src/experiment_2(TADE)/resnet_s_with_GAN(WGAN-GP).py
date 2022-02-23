@@ -1,6 +1,4 @@
 import os
-
-import numpy as np
 import torch
 from torchvision.utils import make_grid
 import torch.nn as nn
@@ -8,10 +6,10 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torchvision
 from torchvision import transforms, datasets
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
-import pandas as pd
-import seaborn as sns
+# import matplotlib.pyplot as plt
+# from sklearn.metrics import confusion_matrix
+# import pandas as pd
+# import seaborn as sns
 
 from torchsummaryX import summary
 
