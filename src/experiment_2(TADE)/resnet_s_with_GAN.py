@@ -8,10 +8,10 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torchvision
 from torchvision import transforms, datasets
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
-import pandas as pd
-import seaborn as sns
+# import matplotlib.pyplot as plt
+# from sklearn.metrics import confusion_matrix
+# import pandas as pd
+# import seaborn as sns
 
 from torchsummaryX import summary
 
