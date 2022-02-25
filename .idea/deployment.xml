@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="sin@168.188.125.197:22 password" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="sin@168.188.125.197:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/sin/git/TADE" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="sin@168.188.125.197:22 password">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/sin/git/TADE" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>

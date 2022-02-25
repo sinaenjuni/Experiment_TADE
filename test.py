@@ -1,4 +1,4 @@
-from sklearn.metrics import confusion_matrix, accuracy_score, plot_confusion_matrix
+from sklearn.metrics import confusion_matrix
 import numpy as np
 
 

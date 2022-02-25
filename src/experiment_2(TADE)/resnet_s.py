@@ -127,6 +127,9 @@ for epoch in range(num_epochs):
     test_loss = 0.0
     test_accuracy = 0.0
 
+    train_true = np.array([])
+    train_pred = np.array([])
+
     for train_idx, data in enumerate(train_data_loader):
         img, target = data
         img, target = img.to(device), target.to(device)
