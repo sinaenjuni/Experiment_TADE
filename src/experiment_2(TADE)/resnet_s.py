@@ -7,10 +7,10 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torchvision
 from torchvision import transforms, datasets
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
-import pandas as pd
-import seaborn as sns
+# import pandas as pd
+# import seaborn as sns
 
 from utiles.tensorboard import getTensorboard
 from utiles.data import getSubDataset
@@ -19,13 +19,15 @@ from models.resnet_s import resnet32
 
 
 # Define hyper-parameters
-name = 'experiments2/Resnet_s/classifier'
+name = 'reference/resnet_s/cifar10/aug/p10/'
 tensorboard_path = f'../../tb_logs/{name}'
+
+
 
 num_workers = 4
 num_epochs = 200
 batch_size = 128
-imb_factor = 0.01
+imb_factor = 0.1
 num_class = 10
 learning_rate = 0.1
 weight_decay = 5e-4
@@ -67,8 +69,8 @@ cls_num_list = train_data_loader.cls_num_list
 model = resnet32(num_classes=10, use_norm=True).to(device)
 print(model)
 
-SAVE_PATH = f'../../weights/experiments2/Resnet_s/GAN/D_200.pth'
-model.load_state_dict(torch.load(SAVE_PATH), strict=False)
+# SAVE_PATH = f'../../weights/experiments2/Resnet_s/GAN/D_200.pth'
+# model.load_state_dict(torch.load(SAVE_PATH), strict=False)
 
 # Define optimizer
 # optimizer = torch.optim.Adam(model.parameters(),
@@ -213,6 +215,13 @@ for epoch in range(num_epochs):
         test_best_accuracy = test_accuracy
         test_best_accuracy_epoch = epoch
 
+    tb.add_text(tag='log', global_step=epoch, text_string=f"epochs: {epoch}, \n"
+          f"train_loss: {train_loss:.4}, \n"
+          f"train_acc: {train_accuracy:.4}, \n"
+          f"test_loss: {test_loss:.4}, \n"
+          f"test_acc: {test_accuracy:.4}, \n"
+          f"train_best_acc: {train_best_accuracy:.4} ({train_best_accuracy_epoch}), \n"
+          f"test_best_acc: {test_best_accuracy:.4} ({test_best_accuracy_epoch})")
 
     print(f"epochs: {epoch}, \n"
           f"train_loss: {train_loss:.4}, \n"

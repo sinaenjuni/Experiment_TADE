@@ -15,31 +15,33 @@ from sklearn.metrics import confusion_matrix
 from utiles.tensorboard import getTensorboard
 from utiles.data import getSubDataset
 from utiles.imbalance_cifar10_loader import ImbalanceCIFAR10DataLoader
-from models.resnet_s import resnet32
-
-# Device configuration
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print('device:', device)
+from models.expert_resnet_cifar import resnet32
+from utiles.loss import DiverseExpertLoss
 
 # Define hyper-parameters
-name = 'reference/resnet_s/cifar10(aug)/p10/'
-TENSORBOARD_PATH = f'../../tb_logs/{name}'
-SAVE_PATH = f'../../weights/{name}'
+name = 'reference/TADE/cifar10/noaug/p100/'
+tensorboard_path = f'../../tb_logs/{name}'
 
-# Hyper-parameters
 num_workers = 4
-num_epochs = 200
+num_epochs = 400
 batch_size = 128
-imb_factor = 0.1
+imb_factor = 0.01
 num_class = 10
 learning_rate = 0.1
 weight_decay = 5e-4
 momentum = 0.9
 nesterov = True
 
+return_feature = True
+
+
+
+# Device configuration
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('device:', device)
 
 # Define Tensorboard
-tb = getTensorboard(TENSORBOARD_PATH)
+tb = getTensorboard(tensorboard_path)
 
 # Define DataLoader
 train_data_loader = ImbalanceCIFAR10DataLoader(data_dir='../../data',
@@ -66,8 +68,16 @@ cls_num_list = train_data_loader.cls_num_list
 # Define model
 model = resnet32(num_classes=10, use_norm=True).to(device)
 print(model)
+# SAVE_PATH = f'../../weights/{name}/'
+# if not os.path.exists(SAVE_PATH):
+#     os.makedirs(SAVE_PATH)
+# torch.save(model.state_dict(), SAVE_PATH + f'model.pth')
 
+criterion = DiverseExpertLoss(cls_num_list=cls_num_list, tau=4).to(device)
+
+# SAVE_PATH = f'../../weights/experiments3/resnet_tade/weight_control.pth'
 # model.load_state_dict(torch.load(SAVE_PATH), strict=False)
+
 
 # Define optimizer
 # optimizer = torch.optim.Adam(model.parameters(),
@@ -81,10 +91,8 @@ optimizer = torch.optim.SGD(model.parameters(),
                             weight_decay=weight_decay,
                             nesterov=nesterov)
 
-train_best_accuracy = 0
-train_best_accuracy_epoch = 0
-test_best_accuracy = 0
-test_best_accuracy_epoch = 0
+
+
 
 step1 = 160
 step2 = 180
@@ -106,7 +114,6 @@ def lr_lambda(epoch):
     return lr
 
 lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
-
 
 train_best_accuracy = 0
 train_best_accuracy_epoch = 0
@@ -134,15 +141,23 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()
 
         model.train()
-        pred = model(img)
+        extra_info = {}
+        output = model(img)
 
-        loss = F.cross_entropy(pred, target)
+        logits = output["logits"]
+        extra_info.update({
+            "logits": logits.transpose(0, 1)
+        })
+
+        output = output["output"]
+        loss = criterion(output_logits=output, target=target, extra_info=extra_info)
+        # loss = F.cross_entropy(pred, target)
         loss.backward()
         optimizer.step()
 
 
         train_loss += loss.item()
-        pred = pred.argmax(-1)
+        pred = output.argmax(dim=1)
         train_accuracy += torch.sum(pred == target).item()
         # print(f"epochs: {epoch}, iter: {train_idx}/{len(train_data_loader)}, loss: {loss.item()}")
 
@@ -155,11 +170,18 @@ for epoch in range(num_epochs):
             img, target = img.to(device), target.to(device)
             batch = img.size(0)
 
-            pred = model(img)
-            loss = F.cross_entropy(pred, target)
+            output = model(img)
+            logits = output["logits"]
+            extra_info.update({
+                "logits": logits.transpose(0, 1)
+            })
+            output = output["output"]
+
+            loss = criterion(output_logits=output, target=target, extra_info=extra_info)
+            # loss = F.cross_entropy(pred, target)
             test_loss += loss.item()
 
-            pred = pred.argmax(-1)
+            pred = output.argmax(-1)
             test_accuracy += torch.sum(pred == target).item()
 
             test_target = np.append(test_target, target.cpu().numpy())
@@ -225,12 +247,6 @@ for epoch in range(num_epochs):
     print(max([param_group['lr'] for param_group in optimizer.param_groups]),
                 min([param_group['lr'] for param_group in optimizer.param_groups]))
     lr_scheduler.step()
-
-
-
-#
-#
-#
 
 
 

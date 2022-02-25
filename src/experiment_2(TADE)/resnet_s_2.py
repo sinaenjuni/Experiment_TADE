@@ -17,29 +17,31 @@ from utiles.data import getSubDataset
 from utiles.imbalance_cifar10_loader import ImbalanceCIFAR10DataLoader
 from models.resnet_s import resnet32
 
-# Device configuration
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print('device:', device)
 
 # Define hyper-parameters
-name = 'reference/resnet_s/cifar10(aug)/p10/'
-TENSORBOARD_PATH = f'../../tb_logs/{name}'
-SAVE_PATH = f'../../weights/{name}'
+name = 'reference/resnet_s/cifar10/p100/'
+tensorboard_path = f'../../tb_logs/{name}'
 
-# Hyper-parameters
+
+
 num_workers = 4
 num_epochs = 200
 batch_size = 128
 imb_factor = 0.1
 num_class = 10
-learning_rate = 0.1
+learning_rate = 0.01
 weight_decay = 5e-4
 momentum = 0.9
 nesterov = True
 
 
+
+# Device configuration
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('device:', device)
+
 # Define Tensorboard
-tb = getTensorboard(TENSORBOARD_PATH)
+tb = getTensorboard(tensorboard_path)
 
 # Define DataLoader
 train_data_loader = ImbalanceCIFAR10DataLoader(data_dir='../../data',
@@ -67,6 +69,7 @@ cls_num_list = train_data_loader.cls_num_list
 model = resnet32(num_classes=10, use_norm=True).to(device)
 print(model)
 
+# SAVE_PATH = f'../../weights/experiments2/Resnet_s/GAN/D_200.pth'
 # model.load_state_dict(torch.load(SAVE_PATH), strict=False)
 
 # Define optimizer
@@ -81,10 +84,7 @@ optimizer = torch.optim.SGD(model.parameters(),
                             weight_decay=weight_decay,
                             nesterov=nesterov)
 
-train_best_accuracy = 0
-train_best_accuracy_epoch = 0
-test_best_accuracy = 0
-test_best_accuracy_epoch = 0
+
 
 step1 = 160
 step2 = 180
@@ -119,6 +119,7 @@ acc_per_class_at_best_epoch = [0] * num_class
 acc_epoch_per_class_at_best_epoch = [0] * num_class
 
 
+
 # Training model
 for epoch in range(num_epochs):
     train_loss = 0.0
@@ -145,6 +146,7 @@ for epoch in range(num_epochs):
         pred = pred.argmax(-1)
         train_accuracy += torch.sum(pred == target).item()
         # print(f"epochs: {epoch}, iter: {train_idx}/{len(train_data_loader)}, loss: {loss.item()}")
+
 
     test_target = np.array([])
     test_predict = np.array([])
@@ -225,13 +227,6 @@ for epoch in range(num_epochs):
     print(max([param_group['lr'] for param_group in optimizer.param_groups]),
                 min([param_group['lr'] for param_group in optimizer.param_groups]))
     lr_scheduler.step()
-
-
-
-#
-#
-#
-
 
 
 
