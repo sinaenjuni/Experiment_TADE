@@ -28,20 +28,32 @@ class ClassificationMetric:
         diag = cm.diagonal()
         diag_sum = diag.sum()
         acc = diag_sum/sum
-        acc_per_classes = diag/sum
+        acc_per_class = diag/sum
 
         if acc > self.best_acc:
             self.best_epoch = epoch
             self.best_acc = acc
             self.best_cm = cm
             for i in range(len(self.target_label)):
-                self.best_acc_per_class[i] = acc_per_classes[i]
+                self.best_acc_per_class[i] = acc_per_class[i]
 
         for i in range(len(self.target_label)):
-            if self.best_acc_per_class_at_epoch['value'][i] < acc_per_classes[i]:
-                self.best_acc_per_class_at_epoch['value'][i] = acc_per_classes[i]
+            if self.best_acc_per_class_at_epoch['value'][i] < acc_per_class[i]:
+                self.best_acc_per_class_at_epoch['value'][i] = acc_per_class[i]
                 self.best_acc_per_class_at_epoch['epoch'][i] = epoch
+        print('epoch:', epoch)
+        print('acc:', acc)
+        print('acc per class', acc_per_class)
+        print('cm')
+        print(cm)
 
+        print('best epoch:', self.best_epoch)
+        print('best acc:', self.best_acc)
+        print('best acc per class:', self.best_acc_per_class)
+        print('best acc per class at epoch:', self.best_acc_per_class_at_epoch)
+        print('best cm:')
+        print(self.best_cm)
+        print("====================================")
         # print('cm', cm)
         # print('acc', acc)
         # print('acc_per_class', acc_per_classes)
@@ -60,9 +72,9 @@ metric = ClassificationMetric(labels)
 for i in range(3):
     y_true = (np.random.rand(10)*5).astype(int)
     y_pred = (np.random.rand(10)*5).astype(int)
-    result = metric.calcMetric(i, y_true, y_pred)
-    print(result)
-    metric.getBestMetric()
+    result = metric.calcMetric(i+1, y_true, y_pred)
+    # print(result)
+    # metric.getBestMetric()
 
 # cm = confusion_matrix(y_true, y_pred, labels=labels)
 # plot_confusion_matrix()
