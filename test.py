@@ -36,19 +36,21 @@ class ClassificationMetric:
                 self.best_acc_per_class_and_epoch['value'][i] = acc_per_class[i]
                 self.best_acc_per_class_and_epoch['epoch'][i] = epoch
 
-        print('epoch:', epoch)
-        print(f"acc: {acc:.4f} ({epoch}), best: {self.best_acc:.4f} ({self.best_epoch})")
+        ret = ""
+        ret += f'epoch: {epoch}\n'
+        ret += f"acc: {acc:.4f} ({epoch}), best: {self.best_acc:.4f} ({self.best_epoch})\n"
         for i in range(len(self.target_label)):
-            print(f'class {i}: '
+            ret += (f'class {i}: '
                   f'{acc_per_class[i]:.4f} ({epoch}), '
                   f'{self.best_acc_per_class[i]:.4f} ({self.best_epoch}), '
-                  f'{self.best_acc_per_class_and_epoch["value"][i]:.4f} ({self.best_acc_per_class_and_epoch["epoch"][i]})')
+                  f'{self.best_acc_per_class_and_epoch["value"][i]:.4f} ({self.best_acc_per_class_and_epoch["epoch"][i]})\n')
+        ret += "cm\n"
+        ret += f"{cm}\n"
+        ret += "Best cm\n"
+        ret += f"{self.best_cm}\n"
+        ret += "===================================="
 
-        print("cm")
-        print(cm)
-        print("Best cm")
-        print(self.best_cm)
-        print("====================================")
+        print(ret)
 
         return {"epoch": epoch,
                 "acc": acc,
@@ -57,7 +59,8 @@ class ClassificationMetric:
                 "best_acc_per_class": self.best_acc_per_class,
                 "best_acc_per_class_and_epoch": self.best_acc_per_class_and_epoch,
                 "cm": cm,
-                "best_cm": self.best_cm}
+                "best_cm": self.best_cm,
+                "test": ret}
 
 
 
@@ -71,8 +74,6 @@ if __name__ == "__main__":
         result = metric.calcMetric(i+1, y_true, y_pred)
         print(result['cm'])
 
-    # df_cm = pd.DataFrame(result['cm'])
-    # print(df_cm)
     df_cm = pd.DataFrame(result['cm'])
     pp_matrix(df_cm)
 

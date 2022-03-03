@@ -182,6 +182,9 @@ for epoch in range(num_epochs):
     # print(train_result)
 
     test_result = test_metric.calcMetric(epoch + 1, test_true, test_pred)
+    tb.add_text(tag='log', global_step=epoch + 1, text_string=test_result['text'])
+    fig = pp_matrix(pd.DataFrame(test_result['best_cm']), figsize=(11, 11))
+    tb.add_figure(tag="best_cm", figure=fig, global_step=epoch+1)
     # print(test_result)
 
 
@@ -274,7 +277,6 @@ for epoch in range(num_epochs):
     lr_scheduler.step()
 
 
-pp_matrix(pd.DataFrame(test_result['best_cm']), figsize=(11, 11))
 
 
 

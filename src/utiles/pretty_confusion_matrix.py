@@ -238,8 +238,8 @@ def pp_matrix(
     ax.set_xlabel(xlbl)
     ax.set_ylabel(ylbl)
     plt.tight_layout()  # set layout slim
-    plt.show()
-
+    # plt.show()
+    return fig
 
 def pp_matrix_from_data(
     y_test,
