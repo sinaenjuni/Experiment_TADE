@@ -122,7 +122,6 @@ best_acc_epoch_per_class = [0] * num_class
 acc_per_class_at_best_epoch = [0] * num_class
 acc_epoch_per_class_at_best_epoch = [0] * num_class
 
-test_result = None
 
 # Training model
 for epoch in range(num_epochs):
