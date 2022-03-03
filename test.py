@@ -41,18 +41,34 @@ class ClassificationMetric:
             if self.best_acc_per_class_at_epoch['value'][i] < acc_per_class[i]:
                 self.best_acc_per_class_at_epoch['value'][i] = acc_per_class[i]
                 self.best_acc_per_class_at_epoch['epoch'][i] = epoch
-        print('epoch:', epoch)
-        print('acc:', acc)
-        print('acc per class', acc_per_class)
-        print('cm')
-        print(cm)
 
-        print('best epoch:', self.best_epoch)
-        print('best acc:', self.best_acc)
-        print('best acc per class:', self.best_acc_per_class)
-        print('best acc per class at epoch:', self.best_acc_per_class_at_epoch)
-        print('best cm:')
+
+        # print('epoch:', epoch)
+        print(f"acc: {acc:.4f} ({epoch}), best: {self.best_acc:.4f} ({self.best_epoch})")
+        # print('acc per class', acc_per_class)
+        for i, (acc_, best_acc_, best_epoch_) in enumerate(zip(acc_per_class,
+                                     self.best_acc_per_class_at_epoch['value'],
+                                     self.best_acc_per_class_at_epoch['epoch'])):
+            print(f'class {i}: {acc_:.4f} ({epoch}), {best_acc_:.4f} ({best_epoch_})')
+
+        print(cm)
         print(self.best_cm)
+
+        # for i, acc_ in enumerate(acc_per_class):
+        #     print(f'class {i}: {acc_:.4f} ({epoch})')
+        # print("ADawd")
+        # for i, (epoch_, acc_) in enumerate(zip(self.best_acc_per_class_at_epoch['epoch'],
+        #                                       self.best_acc_per_class_at_epoch['value'])):
+        #     print(f"epoch: {epoch_}, value: {acc_:.4f}")
+        # print('cm')
+        # print(cm)
+
+        # print('best epoch:', self.best_epoch)
+        # print('best acc:', self.best_acc)
+        # print('best acc per class:', self.best_acc_per_class)
+        # print('best acc per class at epoch:', self.best_acc_per_class_at_epoch)
+        # print('best cm:')
+        # print(self.best_cm)
         print("====================================")
         # print('cm', cm)
         # print('acc', acc)
@@ -69,7 +85,7 @@ class ClassificationMetric:
 
 metric = ClassificationMetric(labels)
 
-for i in range(3):
+for i in range(10):
     y_true = (np.random.rand(10)*5).astype(int)
     y_pred = (np.random.rand(10)*5).astype(int)
     result = metric.calcMetric(i+1, y_true, y_pred)
