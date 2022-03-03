@@ -1,8 +1,5 @@
 from sklearn.metrics import confusion_matrix
 import numpy as np
-from utiles.pretty_confusion_matrix import pp_matrix
-import pandas as pd
-
 
 class ClassificationMetric:
     def __init__(self, target_label):
@@ -60,7 +57,6 @@ class ClassificationMetric:
                 "best_cm": self.best_cm}
 
 
-
 if __name__ == "__main__":
     labels = [0, 1, 2, 4, 5]
     metric = ClassificationMetric(labels)
@@ -70,10 +66,3 @@ if __name__ == "__main__":
         y_pred = (np.random.rand(10)*5).astype(int)
         result = metric.calcMetric(i+1, y_true, y_pred)
         print(result['cm'])
-
-    # df_cm = pd.DataFrame(result['cm'])
-    # print(df_cm)
-    df_cm = pd.DataFrame(result['cm'])
-    pp_matrix(df_cm)
-
-

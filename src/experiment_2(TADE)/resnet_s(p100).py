@@ -9,7 +9,7 @@ import torchvision
 from torchvision import transforms, datasets
 # import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
-# import pandas as pd
+import pandas as pd
 # import seaborn as sns
 
 from utiles.tensorboard import getTensorboard
@@ -17,9 +17,11 @@ from utiles.data import getSubDataset
 from utiles.imbalance_cifar10_loader import ImbalanceCIFAR10DataLoader
 from models.resnet_s import resnet32
 
+from utiles.metric import ClassificationMetric
+from utiles.pretty_confusion_matrix import pp_matrix
 
 # Define hyper-parameters
-name = 'reference/resnet_s/cifar10/p100/'
+name = 'reference/resnet_s/cifar10/aug/p100/'
 tensorboard_path = f'../../tb_logs/{name}'
 
 
@@ -27,9 +29,9 @@ tensorboard_path = f'../../tb_logs/{name}'
 num_workers = 4
 num_epochs = 200
 batch_size = 128
-imb_factor = 0.1
+imb_factor = 0.01
 num_class = 10
-learning_rate = 0.01
+learning_rate = 0.1
 weight_decay = 5e-4
 momentum = 0.9
 nesterov = True
@@ -64,6 +66,8 @@ print("Number of test dataset", len(test_data_loader.dataset))
 print(train_data_loader.cls_num_list)
 cls_num_list = train_data_loader.cls_num_list
 
+train_metric = ClassificationMetric([i for i in range(10)])
+test_metric = ClassificationMetric([i for i in range(10)])
 
 # Define model
 model = resnet32(num_classes=10, use_norm=True).to(device)
@@ -118,14 +122,15 @@ best_acc_epoch_per_class = [0] * num_class
 acc_per_class_at_best_epoch = [0] * num_class
 acc_epoch_per_class_at_best_epoch = [0] * num_class
 
-
+test_result = None
 
 # Training model
 for epoch in range(num_epochs):
-    train_loss = 0.0
-    train_accuracy = 0.0
-    test_loss = 0.0
-    test_accuracy = 0.0
+    train_loss = np.array([])
+    test_loss = np.array([])
+
+    train_true = np.array([])
+    train_pred = np.array([])
 
     for train_idx, data in enumerate(train_data_loader):
         img, target = data
@@ -142,14 +147,19 @@ for epoch in range(num_epochs):
         optimizer.step()
 
 
-        train_loss += loss.item()
+        # train_loss += loss.item()
+        train_loss = np.append(train_loss, loss.item())
         pred = pred.argmax(-1)
-        train_accuracy += torch.sum(pred == target).item()
-        # print(f"epochs: {epoch}, iter: {train_idx}/{len(train_data_loader)}, loss: {loss.item()}")
 
+        train_true = np.append(train_true, target.cpu().numpy())
+        train_pred = np.append(train_pred, pred.cpu().numpy())
+        # print(train_loss.mean())
+        # print(train_true)
+        # print(train_pred)
+        # assert not train_idx == 20, "test"
 
-    test_target = np.array([])
-    test_predict = np.array([])
+    test_true = np.array([])
+    test_pred = np.array([])
     model.eval()
     with torch.no_grad():
         for test_idx, data in enumerate(test_data_loader):
@@ -159,76 +169,112 @@ for epoch in range(num_epochs):
 
             pred = model(img)
             loss = F.cross_entropy(pred, target)
-            test_loss += loss.item()
+            test_loss = np.append(test_loss, loss.item())
+
+            # test_loss += loss.item()
 
             pred = pred.argmax(-1)
-            test_accuracy += torch.sum(pred == target).item()
 
-            test_target = np.append(test_target, target.cpu().numpy())
-            test_predict = np.append(test_predict, pred.cpu().numpy())
+            test_true = np.append(test_true, target.cpu().numpy())
+            test_pred = np.append(test_pred, pred.cpu().numpy())
 
-    conf = confusion_matrix(test_target, test_predict)
-    print(conf)
+    # train_result = train_metric.calcMetric(epoch + 1, train_true, train_pred)
+    # print(train_result)
 
-    acc = np.trace(conf) / conf.sum()
-    print(f"Conf acc: {acc}")
+    test_result = test_metric.calcMetric(epoch + 1, test_true, test_pred)
+    # print(test_result)
+
+
+
+    # test_target = np.array([])
+    # test_predict = np.array([])
+    # model.eval()
+    # with torch.no_grad():
+    #     for test_idx, data in enumerate(test_data_loader):
+    #         img, target = data
+    #         img, target = img.to(device), target.to(device)
+    #         batch = img.size(0)
+    #
+    #         pred = model(img)
+    #         loss = F.cross_entropy(pred, target)
+    #         test_loss += loss.item()
+    #
+    #         pred = pred.argmax(-1)
+    #         test_accuracy += torch.sum(pred == target).item()
+    #
+    #         test_target = np.append(test_target, target.cpu().numpy())
+    #         test_predict = np.append(test_predict, pred.cpu().numpy())
+
+    # conf = confusion_matrix(test_target, test_predict)
+    # print(conf)
+    #
+    # acc = np.trace(conf) / conf.sum()
+    # print(f"Conf acc: {acc}")
 
     # if test_best_accuracy < acc:
     #     test_best_accuracy = acc
     #     test_best_accuracy_epoch = epoch
 
 
-    for i, _conf in enumerate(conf):
-        _acc = _conf[i] / _conf.sum()
-        if best_acc_per_class[i] < _acc:
-            best_acc_per_class[i] = _acc
-            best_acc_epoch_per_class[i] = epoch
-
-        if test_best_accuracy < acc:
-            acc_per_class_at_best_epoch[i] = _acc
-            acc_epoch_per_class_at_best_epoch[i] = epoch
-
-        print(f"class: {i}, "
-              f"ACC: {_acc}, "
-              f"Best: {best_acc_per_class[i]} ({best_acc_epoch_per_class[i]}) "
-              f"Best epoch: {acc_per_class_at_best_epoch[i]} ({acc_epoch_per_class_at_best_epoch[i]})")
-
-
-
-    # print('train_loss', train_loss)
-    # print('train_len', len(train_data_loader))
-    # print('test_loss', test_loss)
-    # print('len', len(test_data_loader))
-
-    train_loss = train_loss/len(train_data_loader)
-    test_loss = test_loss/len(test_data_loader)
-    train_accuracy = train_accuracy/len(train_data_loader.dataset)
-    test_accuracy = test_accuracy/len(test_data_loader.dataset)
-
-    print(len(train_data_loader))
-    print(len(train_data_loader.dataset))
-
-    if train_best_accuracy < train_accuracy:
-        train_best_accuracy = train_accuracy
-        train_best_accuracy_epoch = epoch
-    if test_best_accuracy < test_accuracy:
-        test_best_accuracy = test_accuracy
-        test_best_accuracy_epoch = epoch
-
-
-    print(f"epochs: {epoch}, \n"
-          f"train_loss: {train_loss:.4}, \n"
-          f"train_acc: {train_accuracy:.4}, \n"
-          f"test_loss: {test_loss:.4}, \n"
-          f"test_acc: {test_accuracy:.4}, \n"
-          f"train_best_acc: {train_best_accuracy:.4} ({train_best_accuracy_epoch}), \n"
-          f"test_best_acc: {test_best_accuracy:.4} ({test_best_accuracy_epoch})")
+    # for i, _conf in enumerate(conf):
+    #     _acc = _conf[i] / _conf.sum()
+    #     if best_acc_per_class[i] < _acc:
+    #         best_acc_per_class[i] = _acc
+    #         best_acc_epoch_per_class[i] = epoch
+    #
+    #     if test_best_accuracy < acc:
+    #         acc_per_class_at_best_epoch[i] = _acc
+    #         acc_epoch_per_class_at_best_epoch[i] = epoch
+    #
+    #     print(f"class: {i}, "
+    #           f"ACC: {_acc}, "
+    #           f"Best: {best_acc_per_class[i]} ({best_acc_epoch_per_class[i]}) "
+    #           f"Best epoch: {acc_per_class_at_best_epoch[i]} ({acc_epoch_per_class_at_best_epoch[i]})")
+    #
+    #
+    #
+    # # print('train_loss', train_loss)
+    # # print('train_len', len(train_data_loader))
+    # # print('test_loss', test_loss)
+    # # print('len', len(test_data_loader))
+    #
+    # train_loss = train_loss/len(train_data_loader)
+    # test_loss = test_loss/len(test_data_loader)
+    # train_accuracy = train_accuracy/len(train_data_loader.dataset)
+    # test_accuracy = test_accuracy/len(test_data_loader.dataset)
+    #
+    # print(len(train_data_loader))
+    # print(len(train_data_loader.dataset))
+    #
+    # if train_best_accuracy < train_accuracy:
+    #     train_best_accuracy = train_accuracy
+    #     train_best_accuracy_epoch = epoch
+    # if test_best_accuracy < test_accuracy:
+    #     test_best_accuracy = test_accuracy
+    #     test_best_accuracy_epoch = epoch
+    #
+    # tb.add_text(tag='log', global_step=epoch, text_string=f"epochs: {epoch}, \n"
+    #       f"train_loss: {train_loss:.4}, \n"
+    #       f"train_acc: {train_accuracy:.4}, \n"
+    #       f"test_loss: {test_loss:.4}, \n"
+    #       f"test_acc: {test_accuracy:.4}, \n"
+    #       f"train_best_acc: {train_best_accuracy:.4} ({train_best_accuracy_epoch}), \n"
+    #       f"test_best_acc: {test_best_accuracy:.4} ({test_best_accuracy_epoch})")
+    #
+    # print(f"epochs: {epoch}, \n"
+    #       f"train_loss: {train_loss:.4}, \n"
+    #       f"train_acc: {train_accuracy:.4}, \n"
+    #       f"test_loss: {test_loss:.4}, \n"
+    #       f"test_acc: {test_accuracy:.4}, \n"
+    #       f"train_best_acc: {train_best_accuracy:.4} ({train_best_accuracy_epoch}), \n"
+    #       f"test_best_acc: {test_best_accuracy:.4} ({test_best_accuracy_epoch})")
 
     print(max([param_group['lr'] for param_group in optimizer.param_groups]),
                 min([param_group['lr'] for param_group in optimizer.param_groups]))
     lr_scheduler.step()
 
 
+pp_matrix(pd.DataFrame(test_result['best_cm']), figsize=(11, 11))
 
 
 
