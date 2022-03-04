@@ -26,7 +26,7 @@ print('device:', device)
 
 
 # Define hyper-parameters
-name = 'TADE/Resnet_s(ciar10_p10_aug_WGAN-GP)/'
+name = 'WGAN-GP/cifar10/aug/p10/'
 tensorboard_path = f'../../tb_logs/{name}'
 
 num_workers = 4
@@ -257,14 +257,14 @@ for epoch in range(num_epochs):
     # tb.add_scalar(tag='real_score', global_step=epoch+1, scalar_value=real_score.mean().item())
     # tb.add_scalar(tag='fake_score', global_step=epoch+1, scalar_value=fake_score.mean().item())
 
-    with torch.no_grad():
-        result_images = make_grid(G(fixed_noise).cpu(), padding=0, nrow=10, normalize=True)
-        plt.imshow(result_images.permute(1,2,0).numpy())
-        plt.tight_layout()
-        plt.show()
-        tb.add_image(tag='gened_images',
-                      global_step=epoch+1,
-                      img_tensor=result_images)
+    # with torch.no_grad():
+    #     result_images = make_grid(G(fixed_noise).cpu(), padding=0, nrow=10, normalize=True)
+    #     plt.imshow(result_images.permute(1,2,0).numpy())
+    #     plt.tight_layout()
+    #     plt.show()
+    #     tb.add_image(tag='gened_images',
+    #                   global_step=epoch+1,
+    #                   img_tensor=result_images)
 
 
     # Save sampled images
