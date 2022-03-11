@@ -22,7 +22,7 @@ class ClassificationMetric:
         diag = cm.diagonal()
         diag_sum = diag.sum()
         acc = diag_sum/sum
-        acc_per_class = diag/sum
+        acc_per_class = diag/sum_per_class
 
         if acc > self.best_acc:
             self.best_epoch = epoch

@@ -27,7 +27,7 @@ tensorboard_path = f'../../tb_logs/{name}'
 
 
 num_workers = 4
-num_epochs = 200
+num_epochs = 400
 batch_size = 128
 imb_factor = 0.01
 num_class = 10
