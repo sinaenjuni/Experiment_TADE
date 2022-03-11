@@ -47,11 +47,11 @@ tb = getTensorboard(tensorboard_path)
 
 # Define DataLoader
 train_data_loader = ImbalanceCIFAR10DataLoader(data_dir='../../data',
-                                              batch_size=batch_size,
-                                              shuffle=True,
-                                              num_workers=num_workers,
-                                              training=True,
-                                              imb_factor=imb_factor)
+                                               batch_size=batch_size,
+                                               shuffle=True,
+                                               num_workers=num_workers,
+                                               training=True,
+                                               imb_factor=imb_factor)
 
 test_data_loader = ImbalanceCIFAR10DataLoader(data_dir='../../data',
                                               batch_size=batch_size,
