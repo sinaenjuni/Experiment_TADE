@@ -26,8 +26,10 @@ print('device:', device)
 
 
 # Define hyper-parameters
-name = 'WGAN-GP/cifar10/aug/p100/'
+name = 'WGAN-GP/cifar10/aug/p100(v2)'
 tensorboard_path = f'../../tb_logs/{name}'
+
+print(name)
 
 num_workers = 4
 num_epochs = 200
