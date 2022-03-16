@@ -30,7 +30,8 @@ TARGET_EPOCHS = ["25",
                  "150",
                  "175",
                  "200"]
-WEIGHTS_PATH = "../../weights/WGAN-GP/cifar10/aug/p10/"
+# WEIGHTS_PATH = "../../weights/WGAN-GP/cifar10/aug/p10/"
+WEIGHTS_PATH = "../../weights/LSGAN/cifar10/aug/p10/"
 
 
 num_workers = 4

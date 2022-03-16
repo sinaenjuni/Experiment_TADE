@@ -28,7 +28,7 @@ print('device:', device)
 
 
 # Define hyper-parameters
-name = 'LSGAN/cifar10/aug/p10'
+name = 'LSGAN/cifar10/aug/p100'
 TENSORBOARD_PATH = f'../../tb_logs/{name}/'
 
 # Save the model checkpoints
@@ -40,7 +40,7 @@ if not os.path.exists(SAVE_PATH):
 num_workers = 4
 num_epochs = 200
 batch_size = 128
-imb_factor = 0.1
+imb_factor = 0.01
 
 learning_rate = 0.0002
 weight_decay = 5e-4
