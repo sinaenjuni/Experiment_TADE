@@ -23,7 +23,7 @@ from utiles.pretty_confusion_matrix import pp_matrix
 
 # Define hyper-parameters
 # name = 'resnet_s/pre-training/cifar10/aug/p100(v2)/'
-name = 'resnet_s/pre-training/LSGAN/cifar10/aug/p100(v2)/'
+name = 'resnet_s/pre-training/LSGAN/cifar10/aug/p100/'
 tensorboard_path = f'../../tb_logs/{name}'
 
 TARGET_EPOCHS = ["25",
@@ -32,8 +32,8 @@ TARGET_EPOCHS = ["25",
                  "150",
                  "175",
                  "200"]
-# WEIGHTS_PATH = "../../weights/WGAN-GP/cifar10/aug/p100(v2)/"
-WEIGHTS_PATH = "../../weights/LSGAN/cifar10/aug/p100/"
+WEIGHTS_PATH = "../../weights/WGAN-GP/cifar10/aug/p100(v2)/"
+# WEIGHTS_PATH = "../../weights/LSGAN/cifar10/aug/p100/"
 
 
 num_workers = 4
